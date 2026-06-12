@@ -11,8 +11,7 @@ export async function GET(_req: NextRequest) {
 
   const userId = Number((session.user as any).id);
 
-  const { data: history } = await supabase
-    .from('watch_history')
+  const { data: history } = await (supabase.from('watch_history') as any)
     .select('*, videos(*)')
     .eq('user_id', userId)
     .order('watched_at', { ascending: false })
@@ -21,7 +20,7 @@ export async function GET(_req: NextRequest) {
   const data = (history ?? []).map((h: any) => ({
     video: {
       ...h.videos,
-      genre:     h.videos.genre.split(',').map((g: string) => g.trim()),
+      genre:     h.videos.genre ? h.videos.genre.split(',').map((g: string) => g.trim()) : [],
       createdAt: h.videos.created_at,
     },
     progressSeconds: h.progress_seconds,
@@ -42,18 +41,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { code: 'VALIDATION', message: 'Invalid input' } }, { status: 400 });
   }
 
-  const userId          = Number((session.user as any).id);
+  const userId = Number((session.user as any).id);
   const { videoId, progressSeconds } = parsed.data;
 
-  // Upsert watch history
-  await supabase.from('watch_history').upsert(
+  await (supabase.from('watch_history') as any).upsert(
     { user_id: userId, video_id: videoId, progress_seconds: progressSeconds, watched_at: new Date().toISOString() },
     { onConflict: 'user_id,video_id' }
   );
 
-  // Increment view count only on first play
   if (progressSeconds === 0) {
-    await supabase.rpc('increment_views', { video_id: videoId });
+    await supabase.rpc('increment_views', { video_id: videoId } as any);
   }
 
   return NextResponse.json({ data: null });
