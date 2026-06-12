@@ -39,7 +39,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroSlider videos={featured as any} onPlay={() => {}} />
+      <HeroSlider videos={featured as any} />
       <HomeContent initialCategories={categories} />
     </>
   );
