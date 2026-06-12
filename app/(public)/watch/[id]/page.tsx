@@ -1,17 +1,28 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/db';
 import { WatchPageClient } from '@/components/watch/WatchPageClient';
 
 async function getVideo(id: number) {
-  const v = await prisma.video.findUnique({ where: { id } });
+  const { data: v } = await supabase
+    .from('videos')
+    .select('*')
+    .eq('id', id)
+    .single();
+
   if (!v) return null;
   return {
     ...v,
-    imdbScore: v.imdbScore ? Number(v.imdbScore) : null,
-    genre:     v.genre.split(',').map((g) => g.trim()),
-    createdAt: v.createdAt.toISOString(),
+    imdbScore:    v.imdb_score ? Number(v.imdb_score) : null,
+    genre:        v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],
+    createdAt:    v.created_at,
+    thumbnailUrl: v.thumbnail_url,
+    backdropUrl:  v.backdrop_url,
+    streamUrl:    v.stream_url,
+    trailerUrl:   v.trailer_url,
+    releaseYear:  v.release_year,
+    isFeatured:   v.is_featured,
   };
 }
 
