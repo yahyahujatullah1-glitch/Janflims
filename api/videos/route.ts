@@ -12,7 +12,6 @@ function serializeVideo(v: any) {
   };
 }
 
-// GET /api/videos
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const genre    = searchParams.get('genre');
@@ -21,10 +20,10 @@ export async function GET(req: NextRequest) {
   const limit    = Number(searchParams.get('limit')) || undefined;
   const featured = searchParams.get('featured');
 
-  let query = supabase.from('videos').select('*');
+  let query = (supabase.from('videos') as any).select('*');
 
   if (genre)    query = query.ilike('genre', `%${genre}%`);
-  if (type)     query = query.eq('type', type as any);
+  if (type)     query = query.eq('type', type);
   if (featured) query = query.eq('is_featured', featured === 'true');
 
   const orderCol =
@@ -41,7 +40,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ data: (data ?? []).map(serializeVideo) });
 }
 
-// POST /api/videos — admin only
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.role !== 'admin') {
@@ -54,8 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { code: 'VALIDATION', message: parsed.error.message } }, { status: 400 });
   }
 
-  const { data: existing } = await supabase
-    .from('videos')
+  const { data: existing } = await (supabase.from('videos') as any)
     .select('id')
     .eq('slug', parsed.data.slug)
     .single();
@@ -66,8 +63,7 @@ export async function POST(req: NextRequest) {
 
   const { imdbScore, trailerUrl, backdropUrl, isFeatured, releaseYear, streamUrl, thumbnailUrl, cast, ...rest } = parsed.data as any;
 
-  const { data: video, error } = await supabase
-    .from('videos')
+  const { data: video, error } = await (supabase.from('videos') as any)
     .insert({
       ...rest,
       stream_url:    streamUrl    ?? null,
@@ -78,7 +74,7 @@ export async function POST(req: NextRequest) {
       is_featured:   isFeatured   ?? false,
       release_year:  releaseYear,
       'cast':        cast         ?? null,
-    } as any)
+    })
     .select()
     .single();
 
