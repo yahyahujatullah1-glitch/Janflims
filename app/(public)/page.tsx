@@ -1,25 +1,37 @@
 import React from 'react';
-import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/db';
 import { HeroSlider } from '@/components/hero/HeroSlider';
 import { HomeContent } from '@/components/home/HomeContent';
 
-// Fetch featured videos server-side for hero slider (fast initial paint)
 async function getFeaturedVideos() {
-  const videos = await prisma.video.findMany({
-    where:   { isFeatured: true },
-    orderBy: { views: 'desc' },
-    take:    5,
-  });
-  return videos.map((v) => ({
+  const { data: videos } = await supabase
+    .from('videos')
+    .select('*')
+    .eq('is_featured', true)
+    .order('views', { ascending: false })
+    .limit(5);
+
+  return (videos ?? []).map((v) => ({
     ...v,
-    imdbScore: v.imdbScore ? Number(v.imdbScore) : null,
-    genre:     v.genre.split(',').map((g) => g.trim()),
-    createdAt: v.createdAt.toISOString(),
+    imdbScore:    v.imdb_score ? Number(v.imdb_score) : null,
+    genre:        v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],
+    createdAt:    v.created_at,
+    thumbnailUrl: v.thumbnail_url,
+    backdropUrl:  v.backdrop_url,
+    streamUrl:    v.stream_url,
+    trailerUrl:   v.trailer_url,
+    releaseYear:  v.release_year,
+    isFeatured:   v.is_featured,
+    imdbRating:   v.imdb_score,
   }));
 }
 
 async function getCategories() {
-  return prisma.category.findMany({ orderBy: { name: 'asc' } });
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('*')
+    .order('name', { ascending: true });
+  return categories ?? [];
 }
 
 export default async function HomePage() {
