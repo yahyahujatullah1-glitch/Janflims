@@ -4,14 +4,13 @@ import { HeroSlider } from '@/components/hero/HeroSlider';
 import { HomeContent } from '@/components/home/HomeContent';
 
 async function getFeaturedVideos() {
-  const { data: videos } = await supabase
-    .from('videos')
+  const { data } = await (supabase.from('videos') as any)
     .select('*')
     .eq('is_featured', true)
     .order('views', { ascending: false })
     .limit(5);
 
-  return (videos ?? []).map((v) => ({
+  return (data as any[]).map((v) => ({
     ...v,
     imdbScore:    v.imdb_score ? Number(v.imdb_score) : null,
     genre:        v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],
@@ -22,16 +21,14 @@ async function getFeaturedVideos() {
     trailerUrl:   v.trailer_url,
     releaseYear:  v.release_year,
     isFeatured:   v.is_featured,
-    imdbRating:   v.imdb_score,
   }));
 }
 
 async function getCategories() {
-  const { data: categories } = await supabase
-    .from('categories')
+  const { data } = await (supabase.from('categories') as any)
     .select('*')
     .order('name', { ascending: true });
-  return categories ?? [];
+  return (data as any[]) ?? [];
 }
 
 export default async function HomePage() {
