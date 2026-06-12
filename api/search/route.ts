@@ -4,7 +4,7 @@ import { supabase } from '@/lib/db';
 function serializeVideo(v: any) {
   return {
     ...v,
-    genre:     v.genre.split(',').map((g: string) => g.trim()),
+    genre:     v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],
     createdAt: v.created_at,
   };
 }
@@ -16,16 +16,15 @@ export async function GET(req: NextRequest) {
   const type  = searchParams.get('type')  ?? '';
   const year  = searchParams.get('year')  ?? '';
 
-  let query = supabase.from('videos').select('*').order('views', { ascending: false }).limit(60);
+  let query = (supabase.from('videos') as any).select('*').order('views', { ascending: false }).limit(60);
 
   if (q) {
-    // "cast" is a reserved word in postgres — must be double-quoted in the filter string
     query = query.or(
       `title.ilike.%${q}%,description.ilike.%${q}%,genre.ilike.%${q}%,language.ilike.%${q}%,"cast".ilike.%${q}%`
     );
   }
   if (genre) query = query.ilike('genre', `%${genre}%`);
-  if (type)  query = query.eq('type', type as any);
+  if (type)  query = query.eq('type', type);
   if (year)  query = query.eq('release_year', Number(year));
 
   const { data, error } = await query;
