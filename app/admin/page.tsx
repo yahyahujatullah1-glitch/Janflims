@@ -10,21 +10,21 @@ async function getDashboardData() {
   const [
     { count: videoCount },
     { count: userCount },
-    { data: topVideos },
-    { data: recentUsers },
     { data: viewsData },
     { data: imdbData },
+    { data: topVideosRaw },
+    { data: recentUsersRaw },
   ] = await Promise.all([
     supabase.from('videos').select('*', { count: 'exact', head: true }),
     supabase.from('users').select('*', { count: 'exact', head: true }),
-    supabase.from('videos').select('*').order('views', { ascending: false }).limit(8),
-    supabase.from('users').select('id, name, email, role, created_at').order('created_at', { ascending: false }).limit(5),
-    supabase.from('videos').select('views'),
-    supabase.from('videos').select('imdb_score'),
+    (supabase.from('videos') as any).select('views'),
+    (supabase.from('videos') as any).select('imdb_score'),
+    (supabase.from('videos') as any).select('*').order('views', { ascending: false }).limit(8),
+    (supabase.from('users') as any).select('id, name, email, role, created_at').order('created_at', { ascending: false }).limit(5),
   ]);
 
-  const totalViews = (viewsData ?? []).reduce((sum, v) => sum + (v.views ?? 0), 0);
-  const scores = (imdbData ?? []).map(v => v.imdb_score).filter(Boolean) as number[];
+  const totalViews = (viewsData as any[] ?? []).reduce((sum, v) => sum + (v.views ?? 0), 0);
+  const scores = (imdbData as any[] ?? []).map((v) => v.imdb_score).filter(Boolean) as number[];
   const avgImdb = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '—';
 
   return {
@@ -32,16 +32,16 @@ async function getDashboardData() {
     totalViews:  fmt.views(totalViews),
     avgImdb,
     totalUsers:  userCount ?? 0,
-    topVideos: (topVideos ?? []).map(v => ({
+    topVideos: (topVideosRaw as any[] ?? []).map((v) => ({
       ...v,
-      imdbScore: v.imdb_score ? Number(v.imdb_score) : null,
-      genre:     v.genre ? v.genre.split(',') : [],
-      createdAt: v.created_at,
+      imdbScore:    v.imdb_score ? Number(v.imdb_score) : null,
+      genre:        v.genre ? v.genre.split(',') : [],
+      createdAt:    v.created_at,
       thumbnailUrl: v.thumbnail_url,
       releaseYear:  v.release_year,
       isFeatured:   v.is_featured,
     })),
-    recentUsers: (recentUsers ?? []).map(u => ({
+    recentUsers: (recentUsersRaw as any[] ?? []).map((u) => ({
       ...u,
       createdAt: u.created_at,
     })),
@@ -66,7 +66,6 @@ export default async function AdminDashboard() {
       />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 20 }}>
-        {/* Top Content */}
         <div>
           <h2 className="font-display" style={{ fontSize: 20, marginBottom: 16, color: 'var(--color-text-2)', letterSpacing: '0.06em' }}>TOP CONTENT</h2>
           <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
@@ -97,7 +96,6 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        {/* Recent Users */}
         <div>
           <h2 className="font-display" style={{ fontSize: 20, marginBottom: 16, color: 'var(--color-text-2)', letterSpacing: '0.06em' }}>RECENT USERS</h2>
           <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
@@ -118,4 +116,4 @@ export default async function AdminDashboard() {
       </div>
     </div>
   );
-                  }
+}
