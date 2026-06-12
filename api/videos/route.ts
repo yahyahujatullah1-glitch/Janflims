@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { VideoUpdateSchema } from '@/lib/validators';
+import { VideoCreateSchema } from '@/lib/validators';
 
 function serializeVideo(v: any) {
   return {
@@ -12,76 +12,79 @@ function serializeVideo(v: any) {
   };
 }
 
-// GET /api/videos/:id
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const id = Number(params.id);
-  if (isNaN(id)) return NextResponse.json({ error: { code: 'BAD_REQUEST', message: 'Invalid id' } }, { status: 400 });
+// GET /api/videos
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const genre    = searchParams.get('genre');
+  const type     = searchParams.get('type');
+  const sort     = searchParams.get('sort') ?? 'views';
+  const limit    = Number(searchParams.get('limit')) || undefined;
+  const featured = searchParams.get('featured');
 
-  const { data: video, error } = await supabase
-    .from('videos')
-    .select('*')
-    .eq('id', id)
-    .single();
+  let query = supabase.from('videos').select('*');
 
-  if (error || !video) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Video not found' } }, { status: 404 });
+  if (genre)    query = query.ilike('genre', `%${genre}%`);
+  if (type)     query = query.eq('type', type as any);
+  if (featured) query = query.eq('is_featured', featured === 'true');
 
-  return NextResponse.json({ data: serializeVideo(video) });
+  const orderCol =
+    sort === 'imdb' ? 'imdb_score' :
+    sort === 'year' ? 'release_year' :
+    'views';
+  query = query.order(orderCol, { ascending: false });
+
+  if (limit) query = query.limit(limit);
+
+  const { data, error } = await query;
+  if (error) return NextResponse.json({ error: { code: 'SERVER_ERROR', message: error.message } }, { status: 500 });
+
+  return NextResponse.json({ data: (data ?? []).map(serializeVideo) });
 }
 
-// PUT /api/videos/:id — admin only
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+// POST /api/videos — admin only
+export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.role !== 'admin') {
     return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Admin only' } }, { status: 401 });
   }
 
-  const id     = Number(params.id);
   const body   = await req.json();
-  const parsed = VideoUpdateSchema.safeParse(body);
+  const parsed = VideoCreateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: { code: 'VALIDATION', message: parsed.error.message } }, { status: 400 });
   }
 
-  const {
-    streamUrl, trailerUrl, thumbnailUrl, backdropUrl,
-    imdbScore, isFeatured, releaseYear, cast,
-    ...rest
-  } = parsed.data as any;
+  const { data: existing } = await supabase
+    .from('videos')
+    .select('id')
+    .eq('slug', parsed.data.slug)
+    .single();
 
-  const updatePayload: Record<string, any> = { ...rest };
-  if (streamUrl    !== undefined) updatePayload.stream_url    = streamUrl;
-  if (trailerUrl   !== undefined) updatePayload.trailer_url   = trailerUrl;
-  if (thumbnailUrl !== undefined) updatePayload.thumbnail_url = thumbnailUrl;
-  if (backdropUrl  !== undefined) updatePayload.backdrop_url  = backdropUrl;
-  if (imdbScore    !== undefined) updatePayload.imdb_score    = imdbScore;
-  if (isFeatured   !== undefined) updatePayload.is_featured   = isFeatured;
-  if (releaseYear  !== undefined) updatePayload.release_year  = releaseYear;
-  if (cast         !== undefined) updatePayload['cast']       = cast;
+  if (existing) {
+    return NextResponse.json({ error: { code: 'CONFLICT', message: 'Slug already exists' } }, { status: 409 });
+  }
+
+  const { imdbScore, trailerUrl, backdropUrl, isFeatured, releaseYear, streamUrl, thumbnailUrl, cast, ...rest } = parsed.data as any;
 
   const { data: video, error } = await supabase
     .from('videos')
-    .update(updatePayload as any)
-    .eq('id', id)
+    .insert({
+      ...rest,
+      stream_url:    streamUrl    ?? null,
+      trailer_url:   trailerUrl   ?? null,
+      thumbnail_url: thumbnailUrl ?? null,
+      backdrop_url:  backdropUrl  ?? null,
+      imdb_score:    imdbScore    ?? null,
+      is_featured:   isFeatured   ?? false,
+      release_year:  releaseYear,
+      'cast':        cast         ?? null,
+    } as any)
     .select()
     .single();
 
   if (error || !video) {
-    return NextResponse.json({ error: { code: 'SERVER_ERROR', message: error?.message ?? 'Update failed' } }, { status: 500 });
+    return NextResponse.json({ error: { code: 'SERVER_ERROR', message: error?.message ?? 'Insert failed' } }, { status: 500 });
   }
 
-  return NextResponse.json({ data: serializeVideo(video) });
-}
-
-// DELETE /api/videos/:id — admin only
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions);
-  if ((session?.user as any)?.role !== 'admin') {
-    return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Admin only' } }, { status: 401 });
-  }
-
-  const id = Number(params.id);
-  const { error } = await supabase.from('videos').delete().eq('id', id);
-  if (error) return NextResponse.json({ error: { code: 'SERVER_ERROR', message: error.message } }, { status: 500 });
-
-  return NextResponse.json({ data: null });
+  return NextResponse.json({ data: serializeVideo(video) }, { status: 201 });
 }
