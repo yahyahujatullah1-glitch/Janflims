@@ -19,9 +19,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   const { data: video, error } = await (supabase
     .from('videos') as any)
-    .update(updatePayload)
-    .eq('id', id)
     .select()
+    .eq('id', id)
     .single();
   
   if (error || !video) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Video not found' } }, { status: 404 });
