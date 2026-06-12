@@ -8,12 +8,9 @@ import type { Video } from '@/types/video';
 
 interface HeroSliderProps {
   videos: Video[];
-  onPlay: (v: Video) => void;
 }
-
-const INTERVAL = 7500;
-
-export function HeroSlider({ videos, onPlay }: HeroSliderProps) {
+export function HeroSlider({ videos }: HeroSliderProps) {
+  const { setActiveVideo } = useUIStore();
   const [idx,    setIdx]    = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
