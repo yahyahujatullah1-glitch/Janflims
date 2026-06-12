@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const users = (data ?? []).map((u) => ({
+  const users = (data as any[]).map((u) => ({
     id:        u.id,
     name:      u.name,
     email:     u.email,
