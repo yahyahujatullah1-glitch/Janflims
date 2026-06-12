@@ -5,13 +5,13 @@ import { supabase } from '@/lib/db';
 import { WatchPageClient } from '@/components/watch/WatchPageClient';
 
 async function getVideo(id: number) {
-  const { data: v } = await supabase
-    .from('videos')
+  const { data } = await (supabase.from('videos') as any)
     .select('*')
     .eq('id', id)
     .single();
 
-  if (!v) return null;
+  if (!data) return null;
+  const v = data as any;
   return {
     ...v,
     imdbScore:    v.imdb_score ? Number(v.imdb_score) : null,
