@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import { Spinner } from './Spinner';
 
-type Variant = 'primary' | 'ghost' | 'outline' | 'danger' | 'subtle';
+type Variant = 'primary' | 'ghost' | 'outline' | 'danger' | 'subtle' | 'accent';
 type Size    = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
@@ -28,6 +28,7 @@ const variants: Record<Variant, string> = {
   outline: 'bg-transparent text-[var(--color-accent)] border border-[var(--color-accent-border)] hover:bg-[var(--color-accent-dim)]',
   danger:  'bg-[var(--color-danger-dim)] text-[var(--color-danger)] border border-[rgba(224,82,82,0.3)] hover:bg-[rgba(224,82,82,0.2)]',
   subtle:  'bg-[var(--color-bg-surface-2)] text-[var(--color-text-2)] border border-[var(--color-border)] hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-1)]',
+  accent:  'bg-[var(--color-accent-dim)] text-[var(--color-accent)] border border-[var(--color-accent-border)] hover:bg-[var(--color-accent)] hover:text-[var(--color-text-inverse)] active:scale-[0.97]',
 };
 
 const sizes: Record<Size, string> = {
