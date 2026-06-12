@@ -1,0 +1,108 @@
+// NOTE: Prisma is kept only as an optional migration reference.
+// The app now uses the Supabase JS client directly (lib/db.ts).
+// To apply the schema, use the SQL migration in supabase/migrations/001_initial.sql
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(100)
+  email        String         @unique @db.VarChar(150)
+  password     String         @db.VarChar(255)
+  role         Role           @default(user)
+  avatarUrl    String?        @db.Text    @map("avatar_url")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  watchHistory WatchHistory[]
+  ratings      Rating[]
+
+  @@map("users")
+}
+
+enum Role {
+  user
+  admin
+}
+
+model Video {
+  id           Int             @id @default(autoincrement())
+  title        String          @db.VarChar(255)
+  slug         String          @unique @db.VarChar(255)
+  description  String          @db.Text
+  streamUrl    String          @db.Text    @map("stream_url")
+  trailerUrl   String?         @db.Text    @map("trailer_url")
+  thumbnailUrl String          @db.Text    @map("thumbnail_url")
+  backdropUrl  String?         @db.Text    @map("backdrop_url")
+  type         VideoType
+  genre        String          @db.VarChar(255)
+  releaseYear  Int             @map("release_year")
+  rating       String          @db.VarChar(10)
+  duration     Int?
+  imdbScore    Decimal?        @db.Decimal(3, 1) @map("imdb_score")
+  language     String          @db.VarChar(50)
+  isFeatured   Boolean         @default(false) @map("is_featured")
+  views        Int             @default(0)
+  cast         String?         @db.Text
+  createdAt    DateTime        @default(now()) @map("created_at")
+  categories   VideoCategory[]
+  watchHistory WatchHistory[]
+  ratings      Rating[]
+
+  @@map("videos")
+}
+
+enum VideoType {
+  movie
+  series
+}
+
+model Category {
+  id     Int             @id @default(autoincrement())
+  name   String          @db.VarChar(100)
+  slug   String          @unique @db.VarChar(100)
+  videos VideoCategory[]
+
+  @@map("categories")
+}
+
+model VideoCategory {
+  videoId    Int      @map("video_id")
+  categoryId Int      @map("category_id")
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, categoryId])
+  @@map("video_categories")
+}
+
+model WatchHistory {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  videoId         Int      @map("video_id")
+  watchedAt       DateTime @default(now()) @map("watched_at")
+  progressSeconds Int      @default(0) @map("progress_seconds")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video           Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, videoId])
+  @@map("watch_history")
+}
+
+model Rating {
+  id      Int     @id @default(autoincrement())
+  userId  Int     @map("user_id")
+  videoId Int     @map("video_id")
+  score   Int
+  liked   Boolean @default(false)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video   Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, videoId])
+  @@map("ratings")
+}

@@ -1,0 +1,55 @@
+@import './tokens.css';
+@import './typography.css';
+@import './animations.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-bg-base);
+  color: var(--color-text-1);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-accent-dim);
+  color: var(--color-accent);
+}
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--color-accent); border-radius: 2px; }
+
+/* ── Base elements ── */
+a    { color: inherit; text-decoration: none; }
+img  { display: block; max-width: 100%; }
+button, input, select, textarea { font-family: var(--font-body); }
+button { cursor: pointer; }
+
+/* ── Focus visible ── */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ── Aspect ratio utility ── */
+.aspect-video { aspect-ratio: 16 / 9; }
+.aspect-card  { aspect-ratio: 16 / 9; }
