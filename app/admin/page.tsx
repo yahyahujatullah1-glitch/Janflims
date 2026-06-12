@@ -1,28 +1,50 @@
 import React from 'react';
 import Image from 'next/image';
-import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/db';
 import { StatsGrid } from '@/components/admin/StatsGrid';
 import { fmt } from '@/lib/format';
 import { Star } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 
 async function getDashboardData() {
-  const [videoCount, userCount, viewsAgg, imdbAgg, topVideos, recentUsers] = await Promise.all([
-    prisma.video.count(),
-    prisma.user.count(),
-    prisma.video.aggregate({ _sum: { views: true } }),
-    prisma.video.aggregate({ _avg: { imdbScore: true } }),
-    prisma.video.findMany({ orderBy: { views: 'desc' }, take: 8 }),
-    prisma.user.findMany({ orderBy: { createdAt: 'desc' }, take: 5, select: { id:true, name:true, email:true, role:true, createdAt:true } }),
+  const [
+    { count: videoCount },
+    { count: userCount },
+    { data: topVideos },
+    { data: recentUsers },
+    { data: viewsData },
+    { data: imdbData },
+  ] = await Promise.all([
+    supabase.from('videos').select('*', { count: 'exact', head: true }),
+    supabase.from('users').select('*', { count: 'exact', head: true }),
+    supabase.from('videos').select('*').order('views', { ascending: false }).limit(8),
+    supabase.from('users').select('id, name, email, role, created_at').order('created_at', { ascending: false }).limit(5),
+    supabase.from('videos').select('views'),
+    supabase.from('videos').select('imdb_score'),
   ]);
 
+  const totalViews = (viewsData ?? []).reduce((sum, v) => sum + (v.views ?? 0), 0);
+  const scores = (imdbData ?? []).map(v => v.imdb_score).filter(Boolean) as number[];
+  const avgImdb = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '—';
+
   return {
-    totalVideos: videoCount,
-    totalViews:  fmt.views(viewsAgg._sum.views ?? 0),
-    avgImdb:     imdbAgg._avg.imdbScore ? Number(imdbAgg._avg.imdbScore).toFixed(1) : '—',
-    totalUsers:  userCount,
-    topVideos:   topVideos.map(v => ({ ...v, imdbScore: v.imdbScore ? Number(v.imdbScore) : null, genre: v.genre.split(','), createdAt: v.createdAt.toISOString() })),
-    recentUsers: recentUsers.map(u => ({ ...u, createdAt: u.createdAt.toISOString() })),
+    totalVideos: videoCount ?? 0,
+    totalViews:  fmt.views(totalViews),
+    avgImdb,
+    totalUsers:  userCount ?? 0,
+    topVideos: (topVideos ?? []).map(v => ({
+      ...v,
+      imdbScore: v.imdb_score ? Number(v.imdb_score) : null,
+      genre:     v.genre ? v.genre.split(',') : [],
+      createdAt: v.created_at,
+      thumbnailUrl: v.thumbnail_url,
+      releaseYear:  v.release_year,
+      isFeatured:   v.is_featured,
+    })),
+    recentUsers: (recentUsers ?? []).map(u => ({
+      ...u,
+      createdAt: u.created_at,
+    })),
   };
 }
 
@@ -96,4 +118,4 @@ export default async function AdminDashboard() {
       </div>
     </div>
   );
-}
+                  }
