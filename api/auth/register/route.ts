@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { RegisterSchema } from '@/lib/validators';
-import type { Database } from '@/lib/database.types';
-
-type UserInsert = Database['public']['Tables']['users']['Insert'];
 
 export async function POST(req: NextRequest) {
   const body   = await req.json();
@@ -27,11 +24,9 @@ export async function POST(req: NextRequest) {
 
   const hashed = await bcrypt.hash(password, 12);
 
-  const payload: UserInsert = { name, email, password: hashed, role: 'user' };
-
   const { data: user, error } = await supabase
     .from('users')
-    .insert(payload)
+    .insert({ name, email, password: hashed, role: 'user', avatar_url: null } as any)
     .select('id, name, email, role')
     .single();
 
