@@ -18,8 +18,8 @@ export async function GET() {
   ] = await Promise.all([
     supabase.from('videos').select('*', { count: 'exact', head: true }),
     supabase.from('users').select('*', { count: 'exact', head: true }),
-    supabase.from('videos').select('views'),
-    supabase.from('videos').select('imdb_score').not('imdb_score', 'is', null),
+    (supabase.from('videos') as any).select('views'),
+    (supabase.from('videos') as any).select('imdb_score').not('imdb_score', 'is', null),
   ]);
 
   const totalViews = (viewsData ?? []).reduce((sum: number, v: any) => sum + (v.views ?? 0), 0);
