@@ -17,11 +17,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const id = Number(params.id);
   if (isNaN(id)) return NextResponse.json({ error: { code: 'BAD_REQUEST', message: 'Invalid id' } }, { status: 400 });
 
+    // Cast the table reference to 'any' to bypass the strict 'never' type restriction
   const { data: video, error } = await (supabase
     .from('videos') as any)
-    .select()
+    .update(updatePayload)
     .eq('id', id)
+    .select()
     .single();
+  
   
   if (error || !video) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Video not found' } }, { status: 404 });
 
