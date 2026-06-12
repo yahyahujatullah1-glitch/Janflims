@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   if (isNaN(id)) return NextResponse.json({ error: { code: 'BAD_REQUEST', message: 'Invalid id' } }, { status: 400 });
 
     // Cast the table reference to 'any' to bypass the strict 'never' type restriction
-  const { data: video, error } = await (supabase
+const { data: video, error } = await (supabase
     .from('videos') as any)
     .update(updatePayload)
     .eq('id', id)
