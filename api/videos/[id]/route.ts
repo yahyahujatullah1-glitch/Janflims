@@ -7,7 +7,7 @@ import { VideoUpdateSchema } from '@/lib/validators';
 function serializeVideo(v: any) {
   return {
     ...v,
-    genre:     v.genre.split(',').map((g: string) => g.trim()),
+    genre:     v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],
     createdAt: v.created_at,
   };
 }
@@ -42,7 +42,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: { code: 'VALIDATION', message: parsed.error.message } }, { status: 400 });
   }
 
-  // Map camelCase validator fields → snake_case DB columns
   const {
     streamUrl, trailerUrl, thumbnailUrl, backdropUrl,
     imdbScore, isFeatured, releaseYear, cast,
@@ -61,7 +60,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   const { data: video, error } = await supabase
     .from('videos')
-    .update(updatePayload)
+    .update(updatePayload as any)
     .eq('id', id)
     .select()
     .single();
