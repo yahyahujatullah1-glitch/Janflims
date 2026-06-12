@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/db';
 
 export async function GET() {
-  const { data: categories, error } = await supabase
-    .from('categories')
+  const { data: categories, error } = await (supabase.from('categories') as any)
     .select('*, video_categories(count)')
     .order('name', { ascending: true });
 
