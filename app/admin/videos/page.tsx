@@ -4,18 +4,22 @@ import { VideoForm } from '@/components/admin/VideoForm';
 import { VideoTable } from '@/components/admin/VideoTable';
 
 async function getVideos() {
-  const { data: videos, error } = await supabase
-    .from('videos')
+  const { data, error } = await (supabase.from('videos') as any)
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !videos) return [];
+  if (error || !data) return [];
 
-  return videos.map(v => ({
+  return (data as any[]).map((v) => ({
     ...v,
-    imdbScore: v.imdb_score ? Number(v.imdb_score) : null,
-    genre:     v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],
-    createdAt: v.created_at,
+    imdbScore:    v.imdb_score ? Number(v.imdb_score) : null,
+    genre:        v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],
+    createdAt:    v.created_at,
+    thumbnailUrl: v.thumbnail_url,
+    releaseYear:  v.release_year,
+    isFeatured:   v.is_featured,
+    streamUrl:    v.stream_url,
+    trailerUrl:   v.trailer_url,
   }));
 }
 
