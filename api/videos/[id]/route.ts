@@ -12,26 +12,20 @@ function serializeVideo(v: any) {
   };
 }
 
-// GET /api/videos/:id
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const id = Number(params.id);
   if (isNaN(id)) return NextResponse.json({ error: { code: 'BAD_REQUEST', message: 'Invalid id' } }, { status: 400 });
 
-    // Cast the table reference to 'any' to bypass the strict 'never' type restriction
-const { data: video, error } = await (supabase
-    .from('videos') as any)
-    .update(updatePayload)
+  const { data: video, error } = await (supabase.from('videos') as any)
+    .select('*')
     .eq('id', id)
-    .select()
     .single();
-  
-  
+
   if (error || !video) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Video not found' } }, { status: 404 });
 
   return NextResponse.json({ data: serializeVideo(video) });
 }
 
-// PUT /api/videos/:id — admin only
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.role !== 'admin') {
@@ -61,9 +55,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (releaseYear  !== undefined) updatePayload.release_year  = releaseYear;
   if (cast         !== undefined) updatePayload['cast']       = cast;
 
-  const { data: video, error } = await supabase
-    .from('videos')
-    .update(updatePayload as any)
+  const { data: video, error } = await (supabase.from('videos') as any)
+    .update(updatePayload)
     .eq('id', id)
     .select()
     .single();
@@ -75,7 +68,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json({ data: serializeVideo(video) });
 }
 
-// DELETE /api/videos/:id — admin only
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.role !== 'admin') {
@@ -83,7 +75,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   }
 
   const id = Number(params.id);
-  const { error } = await supabase.from('videos').delete().eq('id', id);
+  const { error } = await (supabase.from('videos') as any).delete().eq('id', id);
   if (error) return NextResponse.json({ error: { code: 'SERVER_ERROR', message: error.message } }, { status: 500 });
 
   return NextResponse.json({ data: null });
