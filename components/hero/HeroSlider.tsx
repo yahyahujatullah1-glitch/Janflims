@@ -4,17 +4,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { HeroSlide } from './HeroSlide';
 import { HeroDots } from './HeroDots';
-import type { Video } from '@/types/video';
 import { useUIStore } from '@/store/uiStore';
+import type { Video } from '@/types/video';
 
 interface HeroSliderProps {
   videos: Video[];
 }
+
+const INTERVAL = 7500;
+
 export function HeroSlider({ videos }: HeroSliderProps) {
-  const { setActiveVideo } = useUIStore();
   const [idx,    setIdx]    = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { setActiveVideo } = useUIStore();
 
   const startTimer = () => {
     timerRef.current = setInterval(() => {
@@ -47,7 +50,6 @@ export function HeroSlider({ videos }: HeroSliderProps) {
     >
       <HeroSlide video={videos[idx]} onPlay={setActiveVideo} />
 
-      {/* Arrow: prev */}
       <button
         onClick={prev}
         style={{
@@ -65,7 +67,6 @@ export function HeroSlider({ videos }: HeroSliderProps) {
         <ChevronLeft size={20} />
       </button>
 
-      {/* Arrow: next */}
       <button
         onClick={next}
         style={{
@@ -83,12 +84,10 @@ export function HeroSlider({ videos }: HeroSliderProps) {
         <ChevronRight size={20} />
       </button>
 
-      {/* Dots */}
       <div style={{ position: 'absolute', bottom: 28, left: 'var(--page-px)' }}>
         <HeroDots count={videos.length} active={idx} onChange={goTo} />
       </div>
 
-      {/* Progress bar */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: 'rgba(255,255,255,0.07)' }}>
         <div
           key={`${idx}-${paused}`}
