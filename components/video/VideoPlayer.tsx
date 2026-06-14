@@ -10,22 +10,29 @@ interface VideoPlayerProps {
 }
 
 export function VideoPlayer({ video }: VideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef  = useRef<HTMLVideoElement>(null);
+  const hlsRef    = useRef<any>(null);
   const streamType = getStreamType(video.streamUrl);
   const embedUrl   = buildEmbedUrl(video.streamUrl);
 
   useEffect(() => {
     if (streamType !== 'hls' || !videoRef.current) return;
+    let cancelled = false;
     import('hls.js').then(({ default: Hls }) => {
+      if (cancelled || !videoRef.current) return;
       if (Hls.isSupported()) {
         const hls = new Hls();
+        hlsRef.current = hls;
         hls.loadSource(video.streamUrl);
-        hls.attachMedia(videoRef.current!);
-        return () => hls.destroy();
-      } else if (videoRef.current!.canPlayType('application/vnd.apple.mpegurl')) {
-        videoRef.current!.src = video.streamUrl;
+        hls.attachMedia(videoRef.current);
+      } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
+        videoRef.current.src = video.streamUrl;
       }
     });
+    return () => {
+      cancelled = true;
+      if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+    };
   }, [video.streamUrl, streamType]);
 
   const containerStyle: React.CSSProperties = {

@@ -30,6 +30,13 @@ export function HomeContent({ initialCategories }: HomeContentProps) {
 
   const historyVideos = history.map((h) => h.video);
 
+  const progressMap: Record<number, number> = Object.fromEntries(
+    history.map((h) => {
+      const total = h.video.duration ? h.video.duration * 60 : 5400;
+      return [h.video.id, Math.min(95, Math.round((h.progressSeconds / total) * 100))];
+    })
+  );
+
   return (
     <>
       <CategoryChips categories={initialCategories} />
@@ -43,6 +50,7 @@ export function HomeContent({ initialCategories }: HomeContentProps) {
             loading={false}
             onSelect={handleSelect}
             showProgress
+            progressMap={progressMap}
           />
         )}
         <VideoRow title="Trending Now"  icon="🔥" videos={trending}    loading={l1} onSelect={handleSelect} />

@@ -94,7 +94,7 @@ export function VideoCard({ video, onSelect, showProgress, progress, size = 'md'
           <span className="truncate">{video.genre[0]}</span>
           <span style={{ marginLeft: 'auto', whiteSpace: 'nowrap' }}>{fmt.views(video.views)}</span>
         </div>
-        {showProgress && <ProgressBar value={progress ?? 35} height={2} />}
+        {showProgress && <ProgressBar value={progress ?? 0} height={2} />}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X, Bookmark, BookmarkCheck } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -22,14 +22,15 @@ export function VideoModal({ video, onClose, onSelect }: VideoModalProps) {
   const { saveProgress } = useWatchHistory();
   const inList = isInWatchlist(video.id);
 
-  // Record a view on open
+  const elapsedRef = useRef(0);
   useEffect(() => {
     saveProgress(video.id, 0);
-  }, [video.id]);
-
-  // Save progress on unmount
-  useEffect(() => {
-    return () => { saveProgress(video.id, 30); };
+    const tick = setInterval(() => { elapsedRef.current += 5; }, 5_000);
+    return () => {
+      clearInterval(tick);
+      if (elapsedRef.current > 0) saveProgress(video.id, elapsedRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [video.id]);
 
   const handleRelatedSelect = (v: Video) => {

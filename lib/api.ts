@@ -50,8 +50,8 @@ export const api = {
 
   stats: () => request<{
     totalVideos: number;
-    totalViews:  number;
-    avgImdb:     number;
+    totalViews:  string;
+    avgImdb:     string;
     totalUsers:  number;
   }>('/stats'),
 };

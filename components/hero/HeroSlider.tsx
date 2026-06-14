@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { HeroSlide } from './HeroSlide';
 import { HeroDots } from './HeroDots';
@@ -19,17 +19,18 @@ export function HeroSlider({ videos }: HeroSliderProps) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { setActiveVideo } = useUIStore();
 
-  const startTimer = () => {
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setIdx((i) => (i + 1) % videos.length);
     }, INTERVAL);
-  };
+  }, [videos.length]);
 
   useEffect(() => {
     if (!videos.length) return;
     if (!paused) startTimer();
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [paused, videos.length]);
+  }, [paused, videos.length, startTimer]);
 
   const goTo = (i: number) => {
     setIdx(i);

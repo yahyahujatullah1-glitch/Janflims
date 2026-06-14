@@ -14,9 +14,10 @@ interface VideoRowProps {
   loading?:      boolean;
   onSelect:      (v: Video) => void;
   showProgress?: boolean;
+  progressMap?:  Record<number, number>;
 }
 
-export function VideoRow({ title, icon, videos, loading, onSelect, showProgress }: VideoRowProps) {
+export function VideoRow({ title, icon, videos, loading, onSelect, showProgress, progressMap }: VideoRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
 
   const scroll = (dir: 1 | -1) => {
@@ -49,6 +50,7 @@ export function VideoRow({ title, icon, videos, loading, onSelect, showProgress 
                 video={v}
                 onSelect={onSelect}
                 showProgress={showProgress}
+                progress={progressMap?.[v.id]}
               />
             ))}
       </div>

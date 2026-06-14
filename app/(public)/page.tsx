@@ -10,7 +10,7 @@ async function getFeaturedVideos() {
     .order('views', { ascending: false })
     .limit(5);
 
-  return (data as any[]).map((v) => ({
+  return (data as any[] | null ?? []).map((v) => ({
     ...v,
     imdbScore:    v.imdb_score ? Number(v.imdb_score) : null,
     genre:        v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],

@@ -9,6 +9,7 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.bunnycdn.com' },
       { protocol: 'https', hostname: '*.cloudflare.com' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: '*.supabase.co' },
     ],
   },
   async headers() {
