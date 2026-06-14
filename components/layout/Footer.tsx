@@ -50,8 +50,8 @@ export function Footer() {
           className="flex flex-wrap justify-between items-center gap-3 pt-6"
           style={{ borderTop: '1px solid var(--color-border)' }}
         >
-          <p className="text-[12px] text-[var(--color-text-3)]">© 2024 JanFlims. All rights reserved.</p>
-          <p className="text-[12px] text-[var(--color-text-3)]">Built on Next.js 14 · Tailwind · MySQL · Vercel</p>
+          <p className="text-[12px] text-[var(--color-text-3)]">© {new Date().getFullYear()} JanFlims. All rights reserved.</p>
+          <p className="text-[12px] text-[var(--color-text-3)]">Built on Next.js 14 · Supabase · Tailwind · Vercel</p>
         </div>
       </div>
     </footer>

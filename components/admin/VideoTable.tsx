@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Star } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
@@ -16,6 +17,8 @@ interface VideoTableProps {
 
 export function VideoTable({ videos, onMutate }: VideoTableProps) {
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [editing,  setEditing]  = useState<number | null>(null);
+  const router = useRouter();
 
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this video? This cannot be undone.')) return;
@@ -23,6 +26,7 @@ export function VideoTable({ videos, onMutate }: VideoTableProps) {
     try {
       await api.videos.delete(id);
       onMutate?.();
+      router.refresh();
     } finally {
       setDeleting(null);
     }
@@ -70,7 +74,7 @@ export function VideoTable({ videos, onMutate }: VideoTableProps) {
             {fmt.views(v.views)}
           </span>
           <div style={{ display: 'flex', gap: 6 }}>
-            <Button variant="outline" size="sm">Edit</Button>
+            <Button variant="outline" size="sm" onClick={() => { window.scrollTo({top:0,behavior:'smooth'}); alert('To edit, delete and re-add the video — full edit form coming soon.'); }}>Edit</Button>
             <Button
               variant="danger"
               size="sm"

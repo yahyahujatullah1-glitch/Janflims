@@ -32,7 +32,8 @@ export default function AdminSettingsPage() {
             />
           ))}
         </div>
-        <Button variant="primary" icon={<Check size={14} />}>Save Settings</Button>
+        <Button variant="primary" icon={<Check size={14} />} onClick={() => alert('Settings are managed via your .env.local file on the server. Redeploy after updating environment variables.')}>Save Settings</Button>
+        <p style={{ fontSize: 11, color: 'var(--color-text-3)', marginTop: 10 }}>⚠️ These values are read-only previews. Edit your .env.local file to change them.</p>
       </div>
     </div>
   );

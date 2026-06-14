@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, Check } from 'lucide-react';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -24,6 +25,7 @@ export function VideoForm({ onSuccess }: VideoFormProps) {
   const [errors,  setErrors]  = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [saved,   setSaved]   = useState(false);
+  const router = useRouter();
 
   const set = (key: string, value: unknown) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -48,6 +50,7 @@ export function VideoForm({ onSuccess }: VideoFormProps) {
       setForm(INITIAL);
       setTimeout(() => setSaved(false), 3000);
       onSuccess?.();
+      router.refresh();
     } catch (e: any) {
       setErrors({ general: e.message });
     } finally {

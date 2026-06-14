@@ -35,7 +35,7 @@ export default async function AdminVideosPage() {
         </p>
       </div>
       <VideoForm />
-      <VideoTable videos={videos as any} />
+      <VideoTable videos={videos as any} onMutate={() => {}} />
     </div>
   );
 }
