@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { HeroSlide } from './HeroSlide';
 import { HeroDots } from './HeroDots';
 import type { Video } from '@/types/video';
+import { useUIStore } from '@/store/uiStore';
 
 interface HeroSliderProps {
   videos: Video[];
@@ -44,7 +45,7 @@ export function HeroSlider({ videos }: HeroSliderProps) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <HeroSlide video={videos[idx]} onPlay={onPlay} />
+      <HeroSlide video={videos[idx]} onPlay={setActiveVideo} />
 
       {/* Arrow: prev */}
       <button
