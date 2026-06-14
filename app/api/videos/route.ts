@@ -7,8 +7,15 @@ import { VideoCreateSchema } from '@/lib/validators';
 function serializeVideo(v: any) {
   return {
     ...v,
-    genre:     v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],
-    createdAt: v.created_at,
+    streamUrl:    v.stream_url,
+    trailerUrl:   v.trailer_url,
+    thumbnailUrl: v.thumbnail_url,
+    backdropUrl:  v.backdrop_url,
+    releaseYear:  v.release_year,
+    isFeatured:   v.is_featured,
+    imdbScore:    v.imdb_score ? Number(v.imdb_score) : null,
+    genre:        v.genre ? v.genre.split(',').map((g: string) => g.trim()) : [],
+    createdAt:    v.created_at,
   };
 }
 
